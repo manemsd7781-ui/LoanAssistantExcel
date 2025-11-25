@@ -1,0 +1,7 @@
+streamlit
+pandas
+openpyxl
+psutil
+python-dateutil
+altair
+numpy
