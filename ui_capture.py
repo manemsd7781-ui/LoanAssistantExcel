@@ -15,19 +15,122 @@ def display_lead_capture():
         st.session_state.lead_data = {}
         st.session_state.eligibility_results = {}
 
+    if '_lead_to_restore' in st.session_state:
+        payload = st.session_state.pop('_lead_to_restore')
+        lead = payload.get('lead', {}) or {}
+
+        # Put full lead dict into session
+        st.session_state['lead_data'] = lead
+
+        # Prefill widget keys BEFORE widget creation
+        # Basic fields
+        st.session_state['mobile_number_input'] = lead.get('mobile_number', "")
+        st.session_state['pincode_input'] = lead.get('pincode', "")
+
+        # Numeric values
+        if lead.get('vintage_years') is not None:
+            try:
+                st.session_state['vintage_input'] = float(lead.get('vintage_years'))
+            except Exception:
+                st.session_state['vintage_input'] = lead.get('vintage_years')
+        if lead.get('age') is not None:
+            try:
+                st.session_state['age_input'] = int(lead.get('age'))
+            except Exception:
+                st.session_state['age_input'] = lead.get('age')
+
+        # Selectboxes / text fields (must match your widget keys & exact option strings)
+        st.session_state['ownership_input'] = lead.get('ownership_status', "")
+        st.session_state['segment_input'] = lead.get('business_segment', "")
+        st.session_state['nature_input'] = lead.get('nature_of_business', "")
+        st.session_state['constitution_input'] = lead.get('constitution_type', "")
+        st.session_state['gender_input'] = lead.get('gender', "")
+
+        # NTC as "Yes"/"No"
+        if 'is_ntc' in lead:
+            st.session_state['ntc_input'] = "Yes" if lead.get('is_ntc') else "No"
+
+        # Co-applicant
+        co = lead.get('co_applicant_details') or {}
+        st.session_state['co_name_input'] = co.get('name', "")
+        st.session_state['co_relation_input'] = co.get('relationship', "")
+
+        # Turnover/Obligations — default units to Rupees if not stored
+        if lead.get('monthly_turnover') is not None:
+            try:
+                st.session_state['turnover_val_input'] = float(lead.get('monthly_turnover'))
+            except Exception:
+                st.session_state['turnover_val_input'] = lead.get('monthly_turnover')
+            st.session_state['turnover_unit_input'] = lead.get('turnover_unit', "Rupees")
+        if lead.get('total_obligations') is not None:
+            try:
+                st.session_state['obligations_val_input'] = float(lead.get('total_obligations'))
+            except Exception:
+                st.session_state['obligations_val_input'] = lead.get('total_obligations')
+            st.session_state['obligations_unit_input'] = lead.get('obligations_unit', "Rupees")
+
+        # Profit and other numeric
+        if lead.get('profit_last_year') is not None:
+            try:
+                st.session_state['profit_input'] = float(lead.get('profit_last_year'))
+            except Exception:
+                st.session_state['profit_input'] = lead.get('profit_last_year')
+
+        if lead.get('foir') is not None:
+            st.session_state['foir'] = lead.get('foir')
+
+        # Loan type: convert code to display text
+        stored_loan = lead.get('requested_loan_type')
+        if stored_loan:
+            st.session_state['loan_type_input'] = "Loan Against Property (LAP)" if stored_loan == "LAP" else stored_loan
+
+        # Remarks
+        st.session_state['remarks_input'] = lead.get('remarks', "")
+
+        # Restore step if provided, else fallback heuristic
+        if payload.get('draft_step') is not None:
+            try:
+                st.session_state['step'] = int(payload.get('draft_step'))
+            except Exception:
+                st.session_state['step'] = st.session_state.get('step', 1)
+        else:
+            if lead.get('yearly_turnover') is not None and lead.get('requested_loan_type'):
+                st.session_state['step'] = 14
+            else:
+                st.session_state['step'] = st.session_state.get('step', 1)
+
+        # Recompute eligibility
+        st.session_state['eligibility_results'] = logic.check_eligibility(st.session_state['lead_data'])
+
+    # def save_lead_to_storage(is_draft=True):
+    #     # uses utils.save_lead_to_excel
+    #     try:
+    #         status = 'draft' if is_draft else 'active'
+    #         ok = utils.save_lead_to_excel(st.session_state.lead_data, status=status)
+    #         return ok
+    #     except Exception as e:
+    #         st.error(f"Failed to save lead: {e}")
+    #         return False
+
     def save_lead_to_storage(is_draft=True):
-        # uses utils.save_lead_to_excel
         try:
             status = 'draft' if is_draft else 'active'
-            ok = utils.save_lead_to_excel(st.session_state.lead_data, status=status)
+            ok = utils.save_lead_to_db(st.session_state.lead_data, status=status)
             return ok
         except Exception as e:
             st.error(f"Failed to save lead: {e}")
             return False
 
+    # def load_draft_from_storage(mobile):
+    #     try:
+    #         return utils.load_draft_from_excel(mobile)
+    #     except Exception as e:
+    #         st.error(f"Failed to load draft: {e}")
+    #         return None
+
     def load_draft_from_storage(mobile):
         try:
-            return utils.load_draft_from_excel(mobile)
+            return utils.load_draft_from_db(mobile)
         except Exception as e:
             st.error(f"Failed to load draft: {e}")
             return None
@@ -50,19 +153,21 @@ def display_lead_capture():
                 mobile = st.text_input("1. What is the client's Mobile Number?", key="mobile_number_input", max_chars=10)
             with col_load:
                 if st.button("Load Draft", key="load_draft_btn"):
-                    if mobile and mobile.isdigit() and len(mobile) == 10:
-                        result = load_draft_from_storage(mobile)
-                        if result:
-                            st.session_state.lead_data = result['lead_data'] or {}
-                            # step: if draft had no step info, try to resume safely
-                            st.session_state.step = result['lead_data'].get('draft_step', st.session_state.step)
-                            st.session_state.eligibility_results = logic.check_eligibility(st.session_state.lead_data)
-                            st.success(f"Draft loaded for {mobile}. Resuming.")
-                            st.rerun()
-                        else:
-                            st.warning("No draft found for this mobile.")
-                    else:
+                    # Validate input mobile first
+                    if not mobile or not mobile.isdigit() or len(mobile) != 10:
                         st.error("Enter a valid 10-digit mobile number before loading a draft.")
+                    else:
+                        result = load_draft_from_storage(mobile)
+                        if not result:
+                            st.warning("No draft found for this mobile.")
+                        else:
+                            lead = result.get('lead_data') or {}
+                            st.session_state['_lead_to_restore'] = {
+                                "lead": lead,
+                                "draft_step": result.get('draft_step')
+                            }
+                            st.success(f"Draft found for {mobile}. Restoring values...")
+                            st.rerun()
 
         if mobile:
             if mobile.isdigit() and len(mobile) == 10:

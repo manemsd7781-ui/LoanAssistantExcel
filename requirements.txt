@@ -5,3 +5,5 @@ psutil
 python-dateutil
 altair
 numpy
+psycopg2-binary
+python-dateutil
