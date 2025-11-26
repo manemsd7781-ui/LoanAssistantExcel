@@ -286,7 +286,7 @@ def display_lead_capture():
             with t_col1:
                 turnover_value = st.number_input("Value", min_value=0.0, format="%.2f", key="turnover_val_input", label_visibility="collapsed")
             with t_col2:
-                turnover_unit = st.selectbox("Unit", utils.NEW_UNIT_OPTIONS, key="turnover_unit_input", label_visibility="collapsed")
+                turnover_unit = st.selectbox("Unit", utils.UNIT_OPTIONS, key="turnover_unit_input", label_visibility="collapsed")
 
             st.write("12. What are the Total Obligations?")
             o_col1, o_col2 = st.columns([2, 1])
@@ -296,7 +296,7 @@ def display_lead_capture():
                 obligations_unit = st.selectbox("Unit", utils.UNIT_OPTIONS, key="obligations_unit_input", label_visibility="collapsed")
 
             if turnover_value > 0 and turnover_unit and obligations_value >= 0 and obligations_unit:
-                turnover = turnover_value * utils.NEW_UNITS[turnover_unit]
+                turnover = turnover_value * utils.UNITS[turnover_unit]
                 obligations = obligations_value * utils.UNITS[obligations_unit]
                 
                 yearly_turnover = turnover * 12 
@@ -330,10 +330,10 @@ def display_lead_capture():
             with p_col1:
                 profit_value = st.number_input("Value", min_value=0.0, format="%.2f", key="profit_val_input", label_visibility="collapsed")
             with p_col2:
-                profit_unit = st.selectbox("Unit", utils.NEW_UNIT_OPTIONS, key="profit_unit_input", label_visibility="collapsed")
+                profit_unit = st.selectbox("Unit", utils.UNIT_OPTIONS, key="profit_unit_input", label_visibility="collapsed")
 
             if profit_value > 0 and profit_unit:
-                profit_yearly = profit_value * utils.NEW_UNITS[profit_unit]
+                profit_yearly = profit_value * utils.UNITS[profit_unit]
                 st.session_state.lead_data['profit_last_year'] = profit_yearly
                 st.info(f"Calculated Annual Net Profit: ₹{profit_yearly:,.2f}")
                 if st.session_state.step == 12: 
