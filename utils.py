@@ -251,20 +251,22 @@ def save_lead_to_db(lead_dict, status="draft"):
 
         query = """
         INSERT INTO public.bdo_leads (
-            mobile_number, vintage_years, business_segment, nature_of_business,
+            mobile_number, vintage_years,firm_name,bdo_name, business_segment, nature_of_business,
             constitution_type, gender, age, co_applicant_details, monthly_turnover,
             yearly_turnover, total_obligations, foir, pincode, ownership_status,
             profit_last_year, eligibility_results, is_ntc, requested_loan_type,
             lead_json, draft_step, status, updated_at, remarks
         )
         VALUES (
-            %(mobile)s, %(vintage)s, %(business_segment)s, %(nature_of_business)s,
+            %(mobile)s, %(vintage)s,%(firm_name)s,%(bdo_name)s, %(business_segment)s, %(nature_of_business)s,
             %(constitution_type)s, %(gender)s, %(age)s, %(co_applicant_details)s, %(monthly_turnover)s,
             %(yearly_turnover)s, %(total_obligations)s, %(foir)s, %(pincode)s, %(ownership_status)s,
             %(profit_last_year)s, %(eligibility_results)s, %(is_ntc)s, %(requested_loan_type)s,
             %(lead_json)s, %(draft_step)s, %(status)s, now(), %(remarks)s
         )
         ON CONFLICT (mobile_number) DO UPDATE SET
+            firm_name = EXCLUDED.firm_name,
+            bdo_name = EXCLUDED.bdo_name,
             vintage_years = EXCLUDED.vintage_years,
             business_segment = EXCLUDED.business_segment,
             nature_of_business = EXCLUDED.nature_of_business,
@@ -292,6 +294,8 @@ def save_lead_to_db(lead_dict, status="draft"):
         params = {
             "mobile": mobile,
             "vintage": vintage,
+            "firm_name": lead_dict.get('firm_name'),
+            "bdo_name": lead_dict.get('bdo_name'),
             "business_segment": lead_dict.get('business_segment'),
             "nature_of_business": lead_dict.get('nature_of_business'),
             "constitution_type": lead_dict.get('constitution_type'),

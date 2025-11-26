@@ -26,6 +26,8 @@ def display_lead_capture():
         # Basic fields
         st.session_state['mobile_number_input'] = lead.get('mobile_number', "")
         st.session_state['pincode_input'] = lead.get('pincode', "")
+        st.session_state['firm_name_input'] = lead.get('firm_name', "")
+        st.session_state['bdo_name_input'] = lead.get('bdo_name', "")
 
         # Numeric values
         if lead.get('vintage_years') is not None:
@@ -175,60 +177,73 @@ def display_lead_capture():
                 if st.session_state.step == 0: st.session_state.step = 1
             else:
                 st.error("Please enter a valid 10-digit mobile number.")
+        
+        #STEP 1: Firm Name
+        if st.session_state.step >= 1:
+            firm_name = st.text_input("2. What is the Firm / Business Name?", key="firm_name_input")
+            if firm_name:
+                st.session_state.lead_data['firm_name'] = firm_name
+                if st.session_state.step == 1: st.session_state.step = 2
+        
+        # STEP 2: BDO/RM Name
+        if st.session_state.step >= 2:
+            bdo_name = st.text_input("3. Please Enter BDO/RM Name?", key="bdo_name_input")
+            if bdo_name:
+                st.session_state.lead_data['bdo_name'] = bdo_name
+                if st.session_state.step == 2: st.session_state.step = 3
 
         # (the rest of your steps remain the same, unchanged)
         # I'll include them exactly as you had, but with Save/Save Draft using save_lead_to_storage
 
-        # STEP 1: Pincode (moved up)
-        if st.session_state.step >= 1:
-            pincode = st.text_input("2. What is the Pincode?", max_chars=6, key="pincode_input")
+        # STEP 3: Pincode (moved up)
+        if st.session_state.step >= 3:
+            pincode = st.text_input("4. What is the Pincode?", max_chars=6, key="pincode_input")
             if pincode:
                 if pincode.isdigit() and len(pincode) == 6:
                     st.session_state.lead_data['pincode'] = pincode
-                    if st.session_state.step == 1: st.session_state.step = 2
+                    if st.session_state.step == 3: st.session_state.step = 4
                 else:
                     st.error("Please enter a valid 6-digit pincode.")
 
-        # STEP 2: Business Vintage
-        if st.session_state.step >= 2:
-            vintage = st.number_input(
-                "3. What is the Vintage of Business (in years)?",min_value=0.0,step=0.01,format="%.2f", key="vintage_input")
+        # STEP 4: Business Vintage
+        if st.session_state.step >= 4:
+            vintage = st.number_input("5. What is the Vintage of Business (in years)?",min_value=0.0,step=0.01,format="%.2f", key="vintage_input")
             if vintage is not None and vintage > 0.0:
                 st.session_state.lead_data['vintage_years'] = float(vintage)
-                if st.session_state.step == 2:
-                    st.session_state.step = 3
+                if st.session_state.step == 4:
+                    st.session_state.step = 5
 
-        # STEP 3: Ownership (moved up)
-        if st.session_state.step >= 3:
-            ownership = st.selectbox("4. What is the Ownership Status?", ["", "Both Owned", "Both Rented", "Residence Owned", "Office Owned", "Residence Owned in Other City"], key="ownership_input")
+        # STEP 5: Ownership (moved up)
+        if st.session_state.step >= 5:
+            ownership = st.selectbox("6. What is the Ownership Status?", ["", "Both Owned", "Both Rented", "Residence Owned", "Office Owned", "Residence Owned in Other City"], key="ownership_input")
             if ownership:
                 st.session_state.lead_data['ownership_status'] = ownership
-                if st.session_state.step == 3: st.session_state.step = 4
-
-        # STEP 4: Business Segment
-        if st.session_state.step >= 4:
-            segment = st.text_input("5. What is the Business Industry?", key="segment_input")
-            if segment:
-                st.session_state.lead_data['business_segment'] = segment
-                if st.session_state.step == 4: st.session_state.step = 5
-
-        # STEP 5: Nature of Business
-        if st.session_state.step >= 5:
-            nature = st.selectbox("6. What is the Nature of Business?", ["", "Retailer", "Manufacturer", "Service Provider", "Wholesaler"], key="nature_input")
-            if nature:
-                st.session_state.lead_data['nature_of_business'] = nature
                 if st.session_state.step == 5: st.session_state.step = 6
 
-        # STEP 6: Constitution Type
+        # STEP 6: Business Segment
         if st.session_state.step >= 6:
-            constitution = st.selectbox("7. What is the Constitution Type?", ["", "Sole Proprietor", "Partnership", "LLP", "Private Ltd", "Public Ltd", "CA","Others"], key="constitution_input")
-            if constitution:
-                st.session_state.lead_data['constitution_type'] = constitution
+            segment = st.text_input("7. What is the Business Industry?", key="segment_input")
+            if segment:
+                st.session_state.lead_data['business_segment'] = segment
                 if st.session_state.step == 6: st.session_state.step = 7
 
-        # STEP 7: Age
+        # STEP 7: Nature of Business
         if st.session_state.step >= 7:
-            age = st.number_input("8. What is the Age of the Business Owner?", min_value=0, max_value=100, step=1, key="age_input")
+            nature = st.selectbox("8. What is the Nature of Business?", ["", "Retailer", "Manufacturer", "Service Provider", "Wholesaler"], key="nature_input")
+            if nature:
+                st.session_state.lead_data['nature_of_business'] = nature
+                if st.session_state.step == 7: st.session_state.step = 8
+
+        # STEP 8: Constitution Type
+        if st.session_state.step >= 8:
+            constitution = st.selectbox("9. What is the Constitution Type?", ["", "Sole Proprietor", "Partnership", "LLP", "Private Ltd", "Public Ltd", "CA","Others"], key="constitution_input")
+            if constitution:
+                st.session_state.lead_data['constitution_type'] = constitution
+                if st.session_state.step == 8: st.session_state.step = 9
+
+        # STEP 9: Age
+        if st.session_state.step >= 9:
+            age = st.number_input("10. What is the Age of the Business Owner?", min_value=0, max_value=100, step=1, key="age_input")
             if age > 0:
                 st.session_state.lead_data['age'] = age
                 if age < 18:
@@ -236,24 +251,24 @@ def display_lead_capture():
                 elif age < 21 or age > 65:
                     st.warning("Co-applicant will be required due to age being outside the 21-65 range.")
                 
-                if age >= 18 and st.session_state.step == 7: 
-                    st.session_state.step = 8
+                if age >= 18 and st.session_state.step == 9: 
+                    st.session_state.step = 10
 
-        # STEP 8: Gender
-        if st.session_state.step >= 8:
-            gender = st.selectbox("9. What is the Gender of the Business Owner?", ["", "Male", "Female", "Other"], key="gender_input")
+        # STEP 10: Gender
+        if st.session_state.step >= 10:
+            gender = st.selectbox("11. What is the Gender of the Business Owner?", ["", "Male", "Female", "Other"], key="gender_input")
             if gender:
                 st.session_state.lead_data['gender'] = gender
-                if st.session_state.step == 8: st.session_state.step = 9
+                if st.session_state.step == 10: st.session_state.step = 11
 
-        if st.session_state.step >= 9:
-            ntc_status = st.selectbox("10. Is the customer New to Credit (NTC)?", ["", "Yes", "No"], key="ntc_input")
+        if st.session_state.step >= 11:
+            ntc_status = st.selectbox("12. Is the customer New to Credit (NTC)?", ["", "Yes", "No"], key="ntc_input")
             if ntc_status:
                 st.session_state.lead_data['is_ntc'] = (ntc_status == "Yes") 
-                if st.session_state.step == 9: st.session_state.step = 10
+                if st.session_state.step == 11: st.session_state.step = 12
 
-        # STEP 9: Co-Applicant
-        if st.session_state.step >= 10:
+        # STEP 12: Co-Applicant
+        if st.session_state.step >= 12:
             is_female = st.session_state.lead_data.get('gender') == 'Female'
             age = st.session_state.lead_data.get('age', 30)
             is_age_out_of_range = age < 21 or age > 65
@@ -271,24 +286,24 @@ def display_lead_capture():
                 
                 if co_name and co_relation:
                     st.session_state.lead_data['co_applicant_details'] = {"name": co_name, "relationship": co_relation}
-                    if st.session_state.step == 10: st.session_state.step = 11
+                    if st.session_state.step == 12: st.session_state.step = 13
                 else:
                     st.warning("Please enter co-applicant name and relationship to proceed.") 
             
-            elif st.session_state.step == 10: 
+            elif st.session_state.step == 12: 
                 st.session_state.lead_data['co_applicant_details'] = None
-                st.session_state.step = 11
+                st.session_state.step = 13
 
-        # STEP 10: Turnover and Obligations
-        if st.session_state.step >= 11:
-            st.write("11. What is the Monthly Turnover?")
+        # STEP 13: Turnover and Obligations
+        if st.session_state.step >= 13:
+            st.write("14. What is the Monthly Turnover?")
             t_col1, t_col2 = st.columns([2, 1])
             with t_col1:
                 turnover_value = st.number_input("Value", min_value=0.0, format="%.2f", key="turnover_val_input", label_visibility="collapsed")
             with t_col2:
                 turnover_unit = st.selectbox("Unit", utils.UNIT_OPTIONS, key="turnover_unit_input", label_visibility="collapsed")
 
-            st.write("12. What are the Total Obligations?")
+            st.write("15. What are the Total Obligations?")
             o_col1, o_col2 = st.columns([2, 1])
             with o_col1:
                 obligations_value = st.number_input("Value", min_value=0.0, format="%.2f", key="obligations_val_input", label_visibility="collapsed")
@@ -318,14 +333,14 @@ def display_lead_capture():
                 
                 if foir > 0.65:
                     st.warning("High FOIR! This may impact eligibility for most lenders.")
-                if st.session_state.step == 11: 
-                    st.session_state.step = 12
+                if st.session_state.step == 13: 
+                    st.session_state.step = 14
             elif (turnover_value > 0 or obligations_value > 0) and (not turnover_unit or not obligations_unit):
                 st.error("Please select a unit (e.g., Lakhs) for both turnover and obligations.")
 
-        # STEP 11: Profit
-        if st.session_state.step >= 12:
-            st.write("12. What was the Net Profit as per ITR for the last financial year?")
+        # STEP 14: Profit
+        if st.session_state.step >= 14:
+            st.write("16. What was the Net Profit as per ITR for the last financial year?")
             p_col1, p_col2 = st.columns([2, 1])
             with p_col1:
                 profit_value = st.number_input("Value", min_value=0.0, format="%.2f", key="profit_val_input", label_visibility="collapsed")
@@ -336,20 +351,20 @@ def display_lead_capture():
                 profit_yearly = profit_value * utils.UNITS[profit_unit]
                 st.session_state.lead_data['profit_last_year'] = profit_yearly
                 st.info(f"Calculated Annual Net Profit: ₹{profit_yearly:,.2f}")
-                if st.session_state.step == 12: 
-                    st.session_state.step = 13
+                if st.session_state.step == 14: 
+                    st.session_state.step = 15
             elif profit_value > 0 and not profit_unit:
                 st.error("Please select a unit (e.g., Lakhs) for the profit value.")
             else:
                 if 'profit_last_year' not in st.session_state.lead_data:
                     st.session_state.lead_data['profit_last_year'] = 0.0
-                if st.session_state.step == 12:
-                    st.session_state.step = 13
+                if st.session_state.step == 14:
+                    st.session_state.step = 15
 
-        # STEP 13: Requested Loan Type (NEW)
-        if st.session_state.step >= 13:
+        # STEP 15: Requested Loan Type (NEW)
+        if st.session_state.step >= 15:
             loan_type_display = st.selectbox(
-                "13. What type of loan service are you looking for?",
+                "17. What type of loan service are you looking for?",
                 ["", "Term Loan", "DLOD", "OD", "Loan Against Property (LAP)"],
                 key="loan_type_input"
             )
@@ -360,11 +375,11 @@ def display_lead_capture():
                     loan_type = loan_type_display
                 st.session_state.lead_data['requested_loan_type'] = loan_type
                 st.session_state.eligibility_results = logic.check_eligibility(st.session_state.lead_data)
-                if st.session_state.step == 13:
-                    st.session_state.step = 14
+                if st.session_state.step == 15:
+                    st.session_state.step = 16
 
-        # STEP 14: Summary and Save (was previously step 13)
-        if st.session_state.step == 14:
+        # STEP 16: Summary and Save (was previously step 13)
+        if st.session_state.step == 16:
             st.success("All details captured! Please review the summary and eligibility on the right.")
 
             st.subheader("Remarks (optional)")
@@ -412,7 +427,7 @@ def display_lead_capture():
                     for tip in tips:
                         st.info(tip)
         
-        if st.session_state.step == 14:
+        if st.session_state.step == 16:
             st.subheader("Final Lead Summary")
             st.json(st.session_state.lead_data)
             # Give user a download option for the single lead as excel
