@@ -11,12 +11,17 @@ import psycopg2.extras
 
 # --- UNIT DEFINITIONS ---
 UNITS = {
-    "Rupees": 1,
     "Thousands": 1000,
     "Lakhs": 100000,
     "Crores": 10000000
 }
-UNIT_OPTIONS = ["", "Rupees", "Thousands", "Lakhs", "Crores"]
+UNIT_OPTIONS = ["", "Thousands", "Lakhs", "Crores"]
+
+NEW_UNITS = {
+    "Lakhs": 100000,
+    "Crores": 10000000
+}
+NEW_UNIT_OPTIONS = ["","Lakhs", "Crores"]
 
 # Default persistent file
 LEADS_FILE = Path("data/leads.xlsx")
