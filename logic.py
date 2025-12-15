@@ -12,7 +12,7 @@ POLICY_RULES = {
         "min_yearly_turnover": 4000000,
         "max_foir": 0.30,
         "allowed_pincodes": SERVICEABLE_PINCODES.get("Indifi (Term Loan)", set()),
-        "allowed_ownership": ["Both Owned", "Residence Owned", "Office Owned", "Both Rented","Residence Owned in Other City"],
+        "allowed_ownership": ["Both Owned", "Residence Owned", "Office Owned", "Both Rented"],
         "negative_industry": NEGATIVE_INDUSTRIES.get("Indifi (Term Loan)", set()),
         "ntc_allowed": False,
         "allowed_loan_types": ["Term Loan"]
