@@ -137,6 +137,17 @@ POLICY_RULES = {
         "negative_industry": NEGATIVE_INDUSTRIES.get("Credit Saison (UBL Program)",set()),
         "ntc_allowed": False,
         "allowed_loan_types": ["Term Loan"]
+    },
+    "Axis Bank (Term Loan)":{
+        "min_vintage_years": 3,
+        "allowed_constitutions": ["Sole Proprietor", "Partnership", "LLP", "Private Ltd", "Public Ltd"],
+        "min_yearly_turnover": 6000000,
+        "max_foir": 0.50,
+        "allowed_pincodes": SERVICEABLE_PINCODES.get("Axis Bank (Term Loan)", set()),
+        "allowed_ownership": ["Both Owned", "Residence Owned", "Office Owned","Residence Owned in Other City"],
+        "negative_industry": NEGATIVE_INDUSTRIES.get("Kotak (Term Loan)",set()),
+        "ntc_allowed": False,
+        "allowed_loan_types": ["Term Loan"]
     }
 }
 
@@ -231,9 +242,24 @@ def check_eligibility(lead_data):
                         break
 
         # 7. Ownership Status Check
-        if 'ownership_status' in lead_data and lead_data['ownership_status'] not in rules.get('allowed_ownership', []):
+        ownership = lead_data.get('ownership_status')
+        allowed_ownership = rules.get('allowed_ownership', [])
+        # Default check
+        ownership_allowed = ownership in allowed_ownership
+        # --- FLEXI SPECIAL RULE ---
+        if lender == "Flexi (Term Loan)":
+            if ownership == "Both Rented":
+                try:
+                    vintage = float(lead_data.get('vintage_years', 0))
+                except Exception:
+                    vintage = 0
+                if vintage >= 2:
+                    ownership_allowed = True  # override
+
+        # Final validation
+        if ownership and not ownership_allowed:
             is_eligible = False
-            reasons.append(f"Ownership status '{lead_data['ownership_status']}' is not supported.")
+            reasons.append(f"Ownership status '{ownership}' is not supported.")
 
         # 8. NTC check
         if 'is_ntc' in lead_data and lead_data['is_ntc'] is True:

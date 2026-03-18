@@ -141,6 +141,7 @@ def load_pincode_sets():
     lender_files = {
         "Indifi (Term Loan)": "data/indifi_pincode.csv",
         "Kotak (Term Loan)": "data/kotak_pincode.csv",
+        "Axis Bank (Term Loan)": "data/axis_pincode.csv",
         "Bajaj (Term Loan)":"data/bajaj_pincode.csv",
         "Bajaj (STBL Lite T/O < 50L)":"data/bajaj_pincode.csv",
         "Bajaj (STBL T/O > 50L)":"data/bajaj_pincode.csv",
